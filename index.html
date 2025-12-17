@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Airen.exe</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&display=swap');
+
+:root{
+  --purple:#a78bfa;
+  --green:#00ffd5;
+  --pink:#ff4ecd;
+  --white:#ffffff;
+}
+
+/* RESET */
+*{margin:0;padding:0;box-sizing:border-box}
+
+/* BODY */
+body{
+  height:100vh;
+  background-color: rgba(0,0,0,0.2);
+  font-family:'JetBrains Mono', monospace;
+  color:#eaeaff;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  overflow:hidden;
+  cursor:pointer;
+}
+
+/* VIDEO BACKGROUND */
+#bgVideo{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  z-index:-1;
+}
+
+/* INTRO */
+#intro{
+  position:fixed;
+  inset:0;
+  background: #000;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:999;
+  cursor:pointer;
+  overflow:hidden;
+}
+#intro span{
+  position: relative;
+  color: var(--green);
+  font-size: 2em;
+  font-weight: 700;
+  letter-spacing: 5px;
+  animation: blink 1.5s infinite, floatText 3s ease-in-out infinite alternate, neonPulse 2s infinite alternate;
+  text-shadow: 0 0 5px var(--green), 0 0 15px var(--green), 0 0 25px var(--green);
+}
+@keyframes blink {0%,100%{opacity:.2}50%{opacity:1}}
+@keyframes floatText {0% { transform: translateY(0px); }50% { transform: translateY(-5px); }100% { transform: translateY(0px); }}
+@keyframes neonPulse{0% { text-shadow: 0 0 5px var(--green), 0 0 15px var(--green);}50% { text-shadow: 0 0 15px var(--green), 0 0 35px var(--green);}100% { text-shadow: 0 0 5px var(--green), 0 0 15px var(--green);}}
+
+#intro .spark{
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: var(--pink);
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0.8;
+  animation: sparkMove 0.6s forwards;
+}
+@keyframes sparkMove{
+  0% { transform: translate(0,0) scale(1); opacity:1;}
+  100% { transform: translate(var(--dx), var(--dy)) scale(0); opacity:0;}
+}
+
+/* Click shatter effect */
+.shatter span {
+  display: inline-block;
+  animation: shatter 0.6s forwards;
+}
+@keyframes shatter{
+  0% { transform: scale(1) rotate(0deg); opacity:1; }
+  100% { transform: scale(0.5) rotate(20deg) translateY(-50px); opacity:0; }
+}
+
+/* CONTAINER */
+.container{
+  background:rgba(10,10,20,0.55);
+  border-radius:20px;
+  padding:42px 50px;
+  border:1px solid rgba(167,139,250,0.25);
+  backdrop-filter:blur(12px);
+  max-width:460px;
+  text-align:center;
+  opacity: 0;
+  transform: translateY(50px);
+  box-shadow: 0 0 20px var(--purple), 0 0 40px var(--pink), 0 0 60px var(--green);
+  transition: background 0.3s ease;
+  z-index:2;
+  position: relative;
+}
+@keyframes popup {0% { transform: translateY(60px); opacity: 0; box-shadow:0 0 0 var(--purple),0 0 0 var(--pink),0 0 0 var(--green);}50% { transform: translateY(-5px); opacity:1; box-shadow:0 0 25px var(--purple),0 0 50px var(--pink),0 0 75px var(--green);}70% { transform: translateY(3px);}100% { transform: translateY(0); opacity:1; box-shadow:0 0 20px var(--purple),0 0 40px var(--pink),0 0 60px var(--green);}}
+.container.active { animation: popup 1.5s cubic-bezier(0.65, 0, 0.35, 1) forwards; }
+
+/* PROFILE */
+.profile{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:18px;
+  margin-bottom:10px;
+  position: relative;
+  opacity:0;
+  transform:translateY(20px);
+  transition: opacity 0.8s ease, transform 0.8s ease, background 0.3s ease;
+  background: rgba(10,10,20,0.25);
+  border-radius: 15px;
+  padding: 10px 15px;
+}
+.profile.active{opacity:1;transform:translateY(0);}
+
+/* AVATAR */
+.avatar{
+  position:relative;
+  width:82px;
+  height:82px;
+  border-radius:50%;
+  padding:4px;
+  overflow:visible;
+  z-index:2;
+  opacity:0;
+  transform:scale(0.8);
+  transition: opacity 1s ease, transform 1s ease;
+}
+.avatar.active { opacity:1; transform:scale(1); }
+.avatar img{ width:100%; height:100%; border-radius:50%; object-fit:cover; position:relative; z-index:2; }
+
+/* Neon flicker รอบ avatar */
+.avatar::before{
+  content:"";
+  position:absolute;
+  top:-6px; left:-6px; right:-6px; bottom:-6px;
+  border-radius:50%;
+  box-shadow:0 0 10px var(--pink),0 0 20px var(--pink),0 0 30px var(--pink);
+  animation: neonFlickerPink 1.2s infinite;
+  z-index:1;
+}
+@keyframes neonFlickerPink{0%,100%{ box-shadow:0 0 8px var(--pink),0 0 18px var(--pink),0 0 28px var(--pink);}50%{ box-shadow:0 0 20px var(--pink),0 0 40px var(--pink),0 0 60px var(--pink);}}
+
+/* NAME */
+.name{ font-size:2.4em; font-weight:600; color:var(--purple); position:relative; opacity:0; transform:translateY(10px); transition: opacity 1s ease, transform 1s ease;}
+.name.active{ opacity:1; transform:translateY(0);}
+.name::before,.name::after{content:attr(data-text);position:absolute;left:0;}
+.name::before{ top:-2px; color:var(--green);}
+.name::after{ top:2px; color:var(--pink);}
+
+.bio{ margin:12px 0 22px; font-size:.95em; opacity:.8 }
+
+/* LEVEL */
+.level{ margin-bottom:18px; text-align:left; font-size:.75em; }
+.exp{ background:#111; border-radius:8px; overflow:hidden; height:8px; margin-top:6px; }
+.exp div{ height:100%; width:0%; background:linear-gradient(90deg,var(--green),var(--pink)); transition:width .15s linear; }
+
+/* LINKS */
+.links a{ display:block; text-decoration:none; color:#eaeaff; padding:11px; margin:8px 0; border-radius:12px; background:rgba(255,255,255,.05); transform: translateY(20px); opacity:0; transition: transform 0.6s ease, opacity 0.6s ease, background 0.2s ease, transform 0.2s ease;}
+.links a.active{ opacity:1; transform:translateY(0);}
+.links a:hover{ background:rgba(167,139,250,.25); transform:scale(1.06);}
+
+/* ACHIEVEMENTS */
+.achievements{ margin-top:18px; display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.badge{ font-size:.6em; padding:8px 4px; border-radius:10px; background:rgba(0,0,0,.3); color:#fff; text-shadow:0 0 5px #fff,0 0 10px #fff; transform: translateY(20px); opacity:0; transition: transform 0.6s ease, opacity 0.6s ease, text-shadow 0.6s ease; position:relative;}
+.badge.active{ opacity:1; transform:translateY(0); animation: neonFlickerWhite 1.5s infinite;}
+@keyframes neonFlickerWhite{0%,100%{ text-shadow:0 0 5px #fff,0 0 10px #fff,0 0 15px #fff; }50%{ text-shadow:0 0 10px #fff,0 0 20px #fff,0 0 30px #fff; }}
+
+/* MUTE */
+#muteBtn{ position:fixed; bottom:20px; right:20px; opacity:.6; cursor:pointer; }
+
+/* FLOAT CODE */
+.code{ position:absolute; font-size:12px; color:rgba(167,139,250,.15); animation:float 12s linear infinite; }
+@keyframes float{from{transform:translateY(100vh)} to{transform:translateY(-100vh)}}
+
+/* ELECTRIC CANVAS */
+#electricCanvas{ position:absolute; pointer-events:none; z-index:3; }
+</style>
+</head>
+
+<body>
+<video autoplay muted loop id="bgVideo">
+  <source src="bg-video.mp4" type="video/mp4">
+</video>
+
+<div id="intro"><span>CLICK TO ENTER</span></div>
+
+<div class="code" style="left:10%">printf("Hello Bitch")...</div>
+<div class="code" style="left:70%">level_up();</div>
+
+<div class="container">
+  <div class="profile">
+    <div class="avatar"><img src="avatar.jpg"></div>
+    <canvas id="electricCanvas" width="120" height="120"></canvas>
+    <div class="name" data-text="Airen">Airen</div>
+  </div>
+
+  <div class="bio">
+  Welcome to my website! 🌸<br>Here are all the ways you can reach me ⬇️⬇️⬇️
+</div>
+
+
+  <div class="level">
+    LEVEL <span id="levelNum">0</span> — EXP <span id="expPercent">0</span>%
+    <div class="exp"><div id="expBar"></div></div>
+  </div>
+
+  <div class="links">
+    <a href="https://github.com/taoairen">GitHub</a>
+    <a href="https://pastefy.app/F71SIdCy">Discord</a>
+    <a href="https://www.instagram.com/lil1th_ai/">Instagram</a>
+  </div>
+
+  <div class="achievements">
+    <div class="badge">★ 〒▽〒</div>
+    <div class="badge">⚔ Girl Coder</div>
+    <div class="badge">✦ Bug Slayer</div>
+  </div>
+</div>
+
+<div id="muteBtn">🔊</div>
+
+<audio id="bgm" src="music1.mp3" loop></audio>
+<audio id="clickSound" preload="auto"><source src="click.mp3" type="audio/mpeg"></audio>
+<audio id="hoverSound" preload="auto"><source src="arcade-blip.mp3" type="audio/mpeg"></audio>
+
+<script>
+const bgm = document.getElementById("bgm");
+const click = document.getElementById("clickSound");
+const hover = document.getElementById("hoverSound");
+const intro = document.getElementById("intro");
+const muteBtn = document.getElementById("muteBtn");
+let muted = false;
+let fading = false;
+
+// fade in เพลง
+function fadeIn(targetVolume = 0.5) {
+  let v = 0;
+  bgm.volume = 0;
+  bgm.play().catch(()=>{});
+  const f = setInterval(()=>{
+    v += 0.02;
+    bgm.volume = Math.min(v, targetVolume);
+    if(v >= targetVolume) clearInterval(f);
+  },40);
+}
+
+// fade out เพลง
+function fadeOut(callback) {
+  let v = bgm.volume;
+  const f = setInterval(()=>{
+    v -= 0.05;
+    bgm.volume = Math.max(v,0);
+    if(v <= 0){
+      clearInterval(f);
+      if(callback) callback();
+    }
+  },40);
+}
+
+// Hover sparks
+intro.addEventListener("mousemove", e => {
+  if(Math.random()<0.3){
+    const spark = document.createElement("div");
+    spark.className="spark";
+    spark.style.left=e.clientX+"px";
+    spark.style.top=e.clientY+"px";
+    spark.style.setProperty('--dx',(Math.random()*40-20)+'px');
+    spark.style.setProperty('--dy',(Math.random()*-40)+'px');
+    intro.appendChild(spark);
+    setTimeout(()=> spark.remove(),600);
+  }
+});
+
+// Intro click
+intro.onclick = () => {
+  click.currentTime=0; click.volume=0.6; click.play().catch(()=>{});
+
+  const span = intro.querySelector("span");
+  const letters = span.textContent.split('');
+  span.textContent='';
+  letters.forEach(letter=>{
+    const lspan = document.createElement('span');
+    lspan.textContent = letter;
+    span.appendChild(lspan);
+  });
+  span.parentElement.classList.add('shatter');
+  span.querySelectorAll('span').forEach((l,i)=>{
+    setTimeout(()=> l.style.animation="shatter 0.6s forwards", i*30);
+  });
+
+  intro.style.transition="opacity 0.6s";
+  intro.style.opacity=0;
+  setTimeout(()=> intro.remove(),800);
+
+  // เปิด container
+  const container = document.querySelector('.container');
+  const profile = document.querySelector('.profile');
+  const avatar = document.querySelector('.avatar');
+  const name = document.querySelector('.name');
+  const links = document.querySelectorAll('.links a');
+  const badges = document.querySelectorAll('.badge');
+
+  container.classList.add('active');
+  profile.classList.add('active');
+  avatar.classList.add('active');
+  name.classList.add('active');
+  links.forEach((link,i)=>{ setTimeout(()=> link.classList.add('active'),100*i+900); });
+  badges.forEach((badge,i)=>{ setTimeout(()=> badge.classList.add('active'),100*i+1200); });
+
+  fadeIn();
+};
+
+// Mute/unmute
+muteBtn.onclick = (e)=>{
+  e.stopPropagation();
+  if(fading) return;
+  muted = !muted;
+  if(muted){
+    fading=true;
+    fadeOut(()=>{ bgm.muted=true; fading=false; });
+    muteBtn.textContent="🔇";
+  } else {
+    bgm.muted=false;
+    fadeIn();
+    muteBtn.textContent="🔊";
+  }
+};
+
+// Click/hover sounds
+document.addEventListener("click",(e)=>{ if(e.target.id==="muteBtn") return; click.currentTime=0; click.volume=0.6; click.play().catch(()=>{}); });
+document.querySelectorAll(".links a").forEach(link=>{ link.addEventListener("mouseenter",()=>{ hover.currentTime=0; hover.volume=0.25; hover.play().catch(()=>{}); }); });
+
+// Level/EXP
+let level=0, exp=0;
+const MAX_LEVEL=99, EXP_PER_LEVEL=100, EXP_GAIN=20;
+const TOTAL_TIME=5000, STEP_TIME=100, STEPS=TOTAL_TIME/STEP_TIME, EXP_STEP=EXP_GAIN/STEPS;
+const levelEl=document.getElementById("levelNum"), expEl=document.getElementById("expPercent"), expBar=document.getElementById("expBar");
+function updateUI(){ levelEl.textContent=level; expEl.textContent=Math.floor(exp); expBar.style.width=exp+"%"; }
+setInterval(()=>{
+  if(level>=MAX_LEVEL) return; 
+  let step=0; 
+  const smooth=setInterval(()=>{
+    if(step>=STEPS){clearInterval(smooth);return;} 
+    exp+=EXP_STEP; 
+    if(exp>=EXP_PER_LEVEL){ exp=0; level++; if(level>=MAX_LEVEL){level=MAX_LEVEL; exp=100; clearInterval(smooth);} } 
+    updateUI(); step++; 
+  },STEP_TIME); 
+},TOTAL_TIME);
+updateUI();
+</script>
+</body>
+</html>
